@@ -1,5 +1,7 @@
 # DCC-MCP Godot Asset Store
 
+![Workflow showcase](docs/images/dcc-asset-godot-store-showcase.webp)
+
 Discover and download reusable packages from the
 [Godot Asset Store](https://store.godotengine.org/) without coupling remote
 catalog logic to the Godot adapter.
