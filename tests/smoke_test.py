@@ -2,7 +2,11 @@ from __future__ import annotations
 
 import os
 
-from test_godot_store import test_search_parser, test_skill_contract, test_version_parser_and_compatibility
+from test_godot_store import (
+    test_search_parser,
+    test_skill_contract,
+    test_version_parser_and_compatibility,
+)
 
 
 def main() -> None:

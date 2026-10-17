@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
-
-from dcc_mcp_core.skill import skill_entry, skill_error, skill_exception, skill_success
+from typing import Any, Optional
 
 from _godot_store import TERMS_URL, download_package, inspect_asset, select_version
+from dcc_mcp_core.skill import skill_entry, skill_error, skill_exception, skill_success
 
 
 @skill_entry
@@ -16,7 +15,7 @@ def main(
     version: Optional[str] = None,
     godot_version: Optional[str] = None,
     **_: Any,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     if not accept_terms:
         return skill_error(
             "Godot Asset Store terms must be accepted before downloading",
@@ -28,7 +27,7 @@ def main(
         selected = select_version(detail["versions"], version, godot_version)
         package = download_package(detail, selected, output_dir)
         return skill_success("Godot Asset Store package downloaded", package=package)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - Skill boundary returns a structured error for any failure.
         return skill_exception(exc, message="Failed to download the Godot Asset Store package")
 
 

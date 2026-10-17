@@ -7,7 +7,7 @@ import urllib.parse
 import urllib.request
 from html.parser import HTMLParser
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Optional
 
 BASE_URL = "https://store.godotengine.org"
 TERMS_URL = f"{BASE_URL}/terms/"
@@ -25,11 +25,11 @@ def get_text(path: str) -> str:
         return response.read().decode("utf-8")
 
 
-def get_json(path: str) -> Dict[str, Any]:
+def get_json(path: str) -> dict[str, Any]:
     return json.loads(get_text(path))
 
 
-def _classes(attrs: List[Tuple[str, Optional[str]]]) -> set[str]:
+def _classes(attrs: list[tuple[str, Optional[str]]]) -> set[str]:
     values = dict(attrs).get("class") or ""
     return set(values.split())
 
@@ -37,13 +37,13 @@ def _classes(attrs: List[Tuple[str, Optional[str]]]) -> set[str]:
 class SearchParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
-        self.items: List[Dict[str, Any]] = []
-        self.current: Optional[Dict[str, Any]] = None
+        self.items: list[dict[str, Any]] = []
+        self.current: Optional[dict[str, Any]] = None
         self.depth = 0
         self.capture: Optional[str] = None
         self.section: Optional[str] = None
 
-    def handle_starttag(self, tag: str, attrs: List[Tuple[str, Optional[str]]]) -> None:
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, Optional[str]]]) -> None:
         attrs_dict = dict(attrs)
         classes = _classes(attrs)
         if tag == "div" and "item" in classes and self.current is None:
@@ -114,9 +114,9 @@ class VersionParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
         self.in_versions = False
-        self.versions: List[Dict[str, Any]] = []
+        self.versions: list[dict[str, Any]] = []
 
-    def handle_starttag(self, tag: str, attrs: List[Tuple[str, Optional[str]]]) -> None:
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, Optional[str]]]) -> None:
         attrs_dict = dict(attrs)
         if tag == "select" and attrs_dict.get("id") == "version-dropdown":
             self.in_versions = True
@@ -160,7 +160,7 @@ def _safe_slug(value: str, field: str) -> str:
     return value
 
 
-def search_assets(query: str, limit: int = 10) -> List[Dict[str, Any]]:
+def search_assets(query: str, limit: int = 10) -> list[dict[str, Any]]:
     query = query.strip()
     if not query:
         raise ValueError("query must not be empty")
@@ -169,7 +169,7 @@ def search_assets(query: str, limit: int = 10) -> List[Dict[str, Any]]:
     return parser.items[: max(1, min(limit, 25))]
 
 
-def inspect_asset(publisher: str, slug: str) -> Dict[str, Any]:
+def inspect_asset(publisher: str, slug: str) -> dict[str, Any]:
     publisher = _safe_slug(publisher, "publisher")
     slug = _safe_slug(slug, "slug")
     detail = get_json(f"/api/v1/assets/{publisher}/{slug}/")
@@ -181,16 +181,16 @@ def inspect_asset(publisher: str, slug: str) -> Dict[str, Any]:
     return detail
 
 
-def _version_tuple(value: str) -> Tuple[int, ...]:
+def _version_tuple(value: str) -> tuple[int, ...]:
     numbers = re.findall(r"\d+", value or "")
     return tuple(int(number) for number in numbers)
 
 
 def select_version(
-    versions: List[Dict[str, Any]],
+    versions: list[dict[str, Any]],
     version: Optional[str] = None,
     godot_version: Optional[str] = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     if version:
         wanted = version.lower().lstrip("v")
         matches = [item for item in versions if str(item.get("version", "")).lower().lstrip("v") == wanted]
@@ -211,10 +211,10 @@ def select_version(
 
 
 def download_package(
-    detail: Dict[str, Any],
-    selected: Dict[str, Any],
+    detail: dict[str, Any],
+    selected: dict[str, Any],
     output_dir: str,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     if int(detail.get("price_cent") or 0) > 0:
         raise ValueError("Paid assets require interactive checkout and cannot be downloaded by this skill")
     download_path = selected.get("download_path")
@@ -226,14 +226,13 @@ def download_package(
     temporary = target.with_suffix(target.suffix + ".part")
     digest = hashlib.sha256()
     try:
-        with _request(urllib.parse.urljoin(BASE_URL, download_path), timeout=180) as response:
-            with temporary.open("wb") as stream:
-                while True:
-                    chunk = response.read(1024 * 1024)
-                    if not chunk:
-                        break
-                    digest.update(chunk)
-                    stream.write(chunk)
+        with _request(urllib.parse.urljoin(BASE_URL, download_path), timeout=180) as response, temporary.open("wb") as stream:
+            while True:
+                chunk = response.read(1024 * 1024)
+                if not chunk:
+                    break
+                digest.update(chunk)
+                stream.write(chunk)
         temporary.replace(target)
     finally:
         if temporary.exists():

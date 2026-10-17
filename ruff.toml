@@ -1,0 +1,5 @@
+# Match the skill's Python 3.9+ compatibility, including evaluated annotations.
+target-version = "py39"
+
+[lint.pyupgrade]
+keep-runtime-typing = true
