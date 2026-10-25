@@ -5,7 +5,7 @@ license: MIT
 compatibility: "dcc-mcp-core 0.19+, Python 3.9+"
 metadata:
   dcc-mcp:
-    version: v0.1.0
+    version: v0.1.1
     dcc: godot
     layer: domain
     lifecycle: experimental
